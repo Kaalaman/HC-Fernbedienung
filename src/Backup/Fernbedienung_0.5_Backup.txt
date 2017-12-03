@@ -1,0 +1,106 @@
+#include <Arduino.h>
+
+/*-----( Import needed libraries )-----*/
+#include <SPI.h>
+#include "RF24.h"
+#include "printf.h"
+#include <LiquidCrystal.h>
+
+/*-----( Declare Constants and Pin Numbers )-----*/
+#define POTIPIN      A3
+#define JOYSTICK_X   A1  // The Joystick potentiometers connected to Arduino Analog inputs
+#define JOYSTICK_Y   A2
+#define JOYSTICK_SW  6  // The Joystick push-down switch, will be used as a Digital input
+
+/*-----( Declare objects )-----*/
+
+LiquidCrystal lcd(8, 7, 6, 5, 4, 3);
+RF24 myRadio (48, 53); // "myRadio" is the identifier you will use in following methods
+
+/*-----( Declare Variables )-----*/
+byte addresses[][6] = {"1Node"}; // Create address for 1 pipe.
+
+byte pipeNr;
+int dInfo = 0;
+
+struct infoStruct {
+  int BatU1;
+  int BatU2;
+  int BatU3;
+} hcInfo;
+
+
+struct dataStruct {
+  int Spoti;
+  int Xposition;          // The Joystick position values
+  int Yposition;
+  bool switchOn;          // The Joystick push-down switch
+  int zaehler;
+} myData;
+
+void setup()   /****** SETUP: RUNS ONCE ******/
+{
+  // Use the serial Monitor (Symbol on far right). Set speed to 115200
+  Serial.begin(115200);
+  Serial.println(F("RF24/Simple Receive data Test"));
+  Serial.println(F("Questions: terry@yourduino.com"));
+
+  pinMode(JOYSTICK_SW, INPUT_PULLUP);  // Pin A2 will be used as a digital input
+
+  myRadio.begin();  // Start up the physical nRF24L01 Radio
+  myRadio.setChannel(108);  // Above most Wifi Channels
+  myRadio.setPALevel(RF24_PA_HIGH);
+  myRadio.openReadingPipe(1, addresses[0]);
+  myRadio.openWritingPipe(addresses[1]);
+  myRadio.setDataRate(RF24_1MBPS);
+
+  myRadio.enableAckPayload();
+  myRadio.enableDynamicPayloads();
+  myRadio.writeAckPayload(1, &hcInfo, sizeof(hcInfo));          // Pre-load an ack-paylod into the FIFO buffer for pipe 1
+
+  //myRadio.setCRCLength(RF24_CRC_8);
+  myRadio.startListening();
+
+  delay(1000);
+
+}//--(end setup )---
+
+
+void loop()   /****** LOOP: RUNS CONSTANTLY ******/
+{
+  myData.Spoti = analogRead(POTIPIN);
+  myData.Xposition = analogRead(JOYSTICK_X);
+  myData.Yposition = analogRead(JOYSTICK_Y);
+  myData.switchOn  = !digitalRead(JOYSTICK_SW);  // Invert the pulldown switch
+
+  myData.Yposition = map(myData.Yposition, 0, 1023, 1023, 0);
+
+  while (myRadio.available( &pipeNr)) {
+    myRadio.read( &hcInfo, sizeof(hcInfo));
+
+    myRadio.writeAckPayload(pipeNr, &myData, sizeof(myData));
+
+
+    Serial.print(F("Sende Rückmeldung: Poti="));
+    Serial.print(myData.Spoti);
+
+    Serial.print(F(" X="));
+    Serial.print(myData.Xposition);
+    Serial.print(F(" Y="));
+    Serial.print(myData.Yposition);
+
+    if ( myData.switchOn == 1){
+      Serial.print(F(" ON "));}
+    else{
+      Serial.print(F(" OFF "));}
+
+
+    Serial.print("INFO: Batterie: ");
+    Serial.print(map(hcInfo.BatU1, 0, 1023, 0, 50));
+
+    myData.zaehler++;
+    Serial.print("\n");
+
+  }
+
+}//--(end main loop )---

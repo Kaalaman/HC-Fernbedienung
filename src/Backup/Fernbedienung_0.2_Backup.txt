@@ -1,0 +1,181 @@
+#include <Arduino.h>
+
+//
+//---Alle benoetigten Biliotheken einbinden--------------------------------------
+//
+#include <SPI.h>
+#include "RF24.h"
+#include "printf.h"
+
+#include <Wire.h>
+
+
+//
+//---Anschlüsse und Konstante Festlegen--------------------------------------------
+//
+#define JOYSTICK_X   A1  // The Joystick potentiometers connected to Arduino Analog inputs
+#define JOYSTICK_Y   A2
+#define JOYSTICK_SW  6  // The Joystick push-down switch, will be used as a Digital input
+
+//
+//---Angeschlossene Obekte definieren----------------------------------------------
+//
+RF24 myRadio (48 , 53); // "myRadio" is the identifier you will use in following methods
+//
+//---Globale-Variablen deklarieren -------------------------------------------------
+//
+byte addresses[][6] = {"1Node", "2Node"}; // Create address for 1 pipe.
+
+unsigned long aktuelleZeit = 0;
+
+//Für I2C-Kommunikation
+const byte MASTER_ADRESS = 42;
+const byte SLAVE_DISPLAY_ADRESS = 24;
+
+int dInfo = 1;
+//TEst Datenübertragung
+//volatile byte buf [2];
+
+
+struct dataStruct {
+  //unsigned long _micros;  // to save response times
+  int Xposition;          // The Joystick position values
+  int Yposition;
+  bool switchOn;          // The Joystick push-down switch
+  int zaehler;
+} myData;
+
+
+
+//
+//--- Setup, wird einmal durchlaufen----------------------------------------------
+//
+void setup()   /****** SETUP: RUNS ONCE ******/
+{
+  Serial.begin(115200);
+
+  pinMode(JOYSTICK_SW, INPUT_PULLUP);  // Pin A2 will be used as a digital input
+  Wire.begin();  //Vorbereitung für I2C
+
+  Serial.println(F("START"));
+  myData.zaehler = 0; // Arbitrary known data to transmit. Change it to test...
+
+  myRadio.begin();  // Start up the physical nRF24L01 Radio
+  myRadio.setChannel(108);  // Above most Wifi Channels
+  myRadio.setPALevel(RF24_PA_LOW);
+  myRadio.setRetries(2,15);
+  myRadio.openWritingPipe( addresses[0]);
+  myRadio.openReadingPipe(1,addresses[1]);
+
+  myRadio.enableAckPayload();
+  myRadio.enableDynamicPayloads();
+
+  //myRadio.writeAckPayload(1,&counter,1);          // Pre-load an ack-paylod into the FIFO buffer for pipe 1
+  //myRadio.setDataRate(RF24_2MBPS);
+  //myRadio.setCRCLength(RF24_CRC_8);
+
+  // Setup von I2C-Kommunikation
+  //Wire.begin (MASTER_ADRESS);
+  //TWBR = 12;
+  //Wire.onReceive (receiveEvent);
+
+
+}//Ende Setup
+
+
+
+//
+//---Schleife, Loop. Wird andauernt durchlaufen. Immer im Kries-------------------------
+//
+void loop()
+{
+  aktuelleZeit = micros();
+  myRadio.stopListening();
+
+  myData.Xposition = analogRead(JOYSTICK_X);
+  myData.Yposition = analogRead(JOYSTICK_Y);
+  myData.switchOn  = !digitalRead(JOYSTICK_SW);  // Invert the pulldown switch
+
+  Serial.print("\n");
+
+  if (myRadio.write( &myData, sizeof (myData))) {
+    if (!myRadio.available()) {
+      Serial.print(F("Leere Rückmeldung. Rundendauer:"));
+      Serial.print(micros()-aktuelleZeit);
+      Serial.print(" Microsekunden");
+    }
+
+    else {
+      while (myRadio.available()) {
+        myRadio.read( &dInfo, sizeof (dInfo));
+
+        unsigned long timer = micros();
+
+        Serial.print(F("Rückmeldung"));
+        Serial.print(dInfo);
+        Serial.print(F("Rundendauer:"));
+        Serial.print(timer - aktuelleZeit);
+        Serial.print(F(" Microsekunden"));
+
+
+      }
+    }
+  }
+  else {
+    Serial.print(F("Senden fehlgeschlagen"));
+  }
+
+  Serial.print(F(" X="));
+  Serial.print(myData.Xposition);
+  Serial.print(F(" Y="));
+  Serial.print(myData.Yposition);
+
+  if ( myData.switchOn == 1){
+    Serial.print(F("ON "));}
+  else{
+    Serial.print(F("OFF"));}
+
+  myData.zaehler++;
+
+  /*
+  byte buf [2] = { map (myData.Xposition, 0, 1023, 0, 255), map (myData.Yposition, 0, 1023, 0, 255)};
+
+  if (!myRadio.write( &myData, sizeof(myData) ))
+      { Serial.print(F("Transmit failed "));
+      }
+
+
+  Serial.print(F("Data Transmitted = "));
+  Serial.print(myData.zaehler);
+
+  Serial.print(F(" X="));
+  Serial.print(myData.Xposition);
+  Serial.print(F(" Y="));
+  Serial.print(myData.Yposition);
+
+  if ( myData.switchOn == 1){
+    Serial.print(F("ON "));}
+  else{
+    Serial.print(F("OFF"));}
+
+  myData.zaehler = myData.zaehler + 1;  // Send different data next time
+  if(myData.zaehler > 32000){myData.zaehler = 0;}
+
+
+  dauer = micros ()- timer;
+  Serial.print(F(" - "));
+  Serial.print(dauer);
+
+
+  Serial.print(F("\n"));
+  */
+  //-------------------ENDE ALTER CODE --------------
+
+  //Vorbereitung für Display-Anschluss
+  /*
+  Wire.beginTransmission(SLAVE_DISPLAY_ADRESS);
+  Wire.write(buf, sizeof buf);
+  boolean allesgut = Wire.endTransmission();
+  */
+
+}//Ende Loop
