@@ -179,6 +179,7 @@ void Config () {
     //hier kommt die Kommunikation mit Display-Arduino
     //damit Antworten empfangen werden koennen
     //Zur Überpruefung der Auswahl
+    //Test
 /*
     bModi = Wire.read ();
     bPosX = Wire.read ();
