@@ -176,10 +176,17 @@ void Config () {
     WerteEinlesen();
     AusgabeDisplay (1);
 
-
     //hier kommt die Kommunikation mit Display-Arduino
     //damit Antworten empfangen werden koennen
     //Zur Überpruefung der Auswahl
+/*
+    bModi = Wire.read ();
+    bPosX = Wire.read ();
+    bPosY = Wire.read ();
+    bPoti = Wire.read ();
+    bBatU1 = Wire.read ();
+    bBatU2 = Wire.read ();
+    bBatU3 = Wire.read (); */
 
   }
   Serial.print ("Konfiguration");
