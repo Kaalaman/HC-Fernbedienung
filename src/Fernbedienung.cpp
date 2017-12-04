@@ -1,4 +1,4 @@
-//Version 1.0.0
+//Version 1.0.0a1
 /*-----( Import needed libraries )-----*/
 #include <Arduino.h>
 #include <SPI.h>
