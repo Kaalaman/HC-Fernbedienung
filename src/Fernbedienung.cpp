@@ -170,10 +170,16 @@ void Config () {
 
   bool vbConfig = true;
 
+
   while (vbConfig == true ) {
     Serial.print("While");
     WerteEinlesen();
     AusgabeDisplay (1);
+
+
+    //hier kommt die Kommunikation mit Display-Arduino
+    //damit Antworten empfangen werden koennen
+    //Zur Überpruefung der Auswahl
 
   }
   Serial.print ("Konfiguration");
