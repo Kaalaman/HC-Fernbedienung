@@ -158,7 +158,7 @@ void AusgabeDisplay (byte vBetriebsModus){
   Wire.write ( map(myData.Yposition, 0, 1023, 0, 255));
   Wire.write ( map(myData.Spoti, 0, 1023, 0, 228));
   Wire.write ( map(hcInfo.BatU1, 0, 1023, 0, 254));
-  Wire.write ( map(hcInfo.BatU2, 0, 1023, 0, 254));
+  Wire.write ( map(hcInfo.BatU2, 0, 1023, 0, 254));//Soll nur noch 1 Spannung übertragen wrden
   Wire.write ( map(hcInfo.BatU3, 0, 1023, 0, 254));
 
   Wire.endTransmission();
