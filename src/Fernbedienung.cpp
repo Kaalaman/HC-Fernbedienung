@@ -27,7 +27,7 @@ const byte MASTER_ADRESS = 42; // Eigene Adresse des Arduino
 //alle Globalen-Variablen definieren
 byte addresses[][6] = {"1Node"}; // Adresse für einen Übertragungsweg.
 
-byte bBetriebsModi;
+byte bBetriebsModi = 1;
 byte pipeNr;
 //int dInfo = 0;
 int iPoti = 0; // Integer für Auslesen des Universal Potis
@@ -93,6 +93,13 @@ void loop()   /****** LOOP: Dauerschleife ******/
 
     WerteEinlesen ();//Funtion zum Eingaben Einlesen
 
+    if (myData.switchOn == true && bBetriebsModi == 1) {
+      bBetriebsModi = 2;
+    }
+    else if (myData.switchOn ==true && bBetriebsModi ==2) {
+      bBetriebsModi = 1;
+    }
+
     while (hcRadio.available( &pipeNr)) {
       hcRadio.read( &hcInfo, sizeof(hcInfo));
 
@@ -115,7 +122,7 @@ void loop()   /****** LOOP: Dauerschleife ******/
       Serial.print("INFO: Batterie: ");
       Serial.print(map(hcInfo.BatU1, 0, 1023, 0, 255));
 
-      AusgabeDisplay(1);
+      AusgabeDisplay(bBetriebsModi);
 
       myData.zaehler++;
       Serial.print("\n");
@@ -155,6 +162,7 @@ void AusgabeDisplay (byte vBetriebsModus){
   Wire.write ( vBetriebsModus);
   Wire.write ( map(myData.Xposition, 0, 1023, 0, 255));
   Wire.write ( map(myData.Yposition, 0, 1023, 0, 255));
+  Wire.write ( myData.switchOn);
   Wire.write ( map(myData.Spoti, 0, 1023, 0, 228));
   Wire.write ( map(hcInfo.BatU1, 0, 1023, 0, 254));
   Wire.write ( map(hcInfo.BatU2, 0, 1023, 0, 254));
@@ -172,7 +180,7 @@ void Config () {
   while (vbConfig == true ) {
     Serial.print("While");
     WerteEinlesen();
-    AusgabeDisplay (1);
+    AusgabeDisplay (bBetriebsModi);
 
 
     //hier kommt die Kommunikation mit Display-Arduino
