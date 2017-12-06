@@ -1,4 +1,3 @@
-//Version 1.0.0a1
 /*-----( Import needed libraries )-----*/
 #include <Arduino.h>
 #include <SPI.h>
@@ -83,7 +82,7 @@ void setup()   /****** SETUP: einmal durchlaufen ******/
   Wire.begin ();
   delay(1000);
 
-  Config ();
+  //Config ();
   Serial.print ("EndeSetup");
 }//--Ende Setup---
 
@@ -126,7 +125,7 @@ void loop()   /****** LOOP: Dauerschleife ******/
   } else {
 
     //Serial.print ("-else-");
-  }
+  } //ende IF daten ankommen
 
 
 
@@ -156,11 +155,10 @@ void AusgabeDisplay (byte vBetriebsModus){
   Wire.write ( vBetriebsModus);
   Wire.write ( map(myData.Xposition, 0, 1023, 0, 255));
   Wire.write ( map(myData.Yposition, 0, 1023, 0, 255));
-  Wire.write ( myData.switchOn); //
   Wire.write ( map(myData.Spoti, 0, 1023, 0, 228));
   Wire.write ( map(hcInfo.BatU1, 0, 1023, 0, 254));
-  Wire.write ( map(hcInfo.BatU2, 0, 1023, 0, 254));//Soll nur noch 1 Spannung übertragen wrden
-  Wire.write ( map(hcInfo.BatU3, 0, 1023, 0, 254));//Defür noch ob Joystick gedrücjt oder nicht
+  Wire.write ( map(hcInfo.BatU2, 0, 1023, 0, 254));
+  Wire.write ( map(hcInfo.BatU3, 0, 1023, 0, 254));
 
   Wire.endTransmission();
 }
@@ -171,24 +169,15 @@ void Config () {
 
   bool vbConfig = true;
 
-
   while (vbConfig == true ) {
     Serial.print("While");
     WerteEinlesen();
     AusgabeDisplay (1);
 
+
     //hier kommt die Kommunikation mit Display-Arduino
     //damit Antworten empfangen werden koennen
     //Zur Überpruefung der Auswahl
-    //Test
-/*
-    bModi = Wire.read ();
-    bPosX = Wire.read ();
-    bPosY = Wire.read ();
-    bPoti = Wire.read ();
-    bBatU1 = Wire.read ();
-    bBatU2 = Wire.read ();
-    bBatU3 = Wire.read (); */
 
   }
   Serial.print ("Konfiguration");
