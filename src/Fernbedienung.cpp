@@ -29,6 +29,8 @@ byte addresses[][6] = {"1Node"}; // Adresse für einen Übertragungsweg.
 
 byte bBetriebsModi = 1;
 byte pipeNr;
+byte bFeldAuswahl = 0;
+
 //int dInfo = 0;
 int iPoti = 0; // Integer für Auslesen des Universal Potis
 //bool bConfig = true; //Boolean für Config von Einstellungen
@@ -165,8 +167,6 @@ void AusgabeDisplay (byte vBetriebsModus){
   Wire.write ( myData.switchOn);
   Wire.write ( map(myData.Spoti, 0, 1023, 0, 228));
   Wire.write ( map(hcInfo.BatU, 0, 1023, 0, 254));
-  //Wire.write ( map(hcInfo.BatU2, 0, 1023, 0, 254));
-  //Wire.write ( map(hcInfo.BatU3, 0, 1023, 0, 254));
 
   Wire.endTransmission();
 }
@@ -182,10 +182,8 @@ void Config () {
     WerteEinlesen();
     AusgabeDisplay (bBetriebsModi);
 
-
-    //hier kommt die Kommunikation mit Display-Arduino
-    //damit Antworten empfangen werden koennen
-    //Zur Überpruefung der Auswahl
+    //Wire.begin (MASTER_ADRESS);
+    //Wire.read(bFeldAuswahl);
 
   }
   Serial.print ("Konfiguration");
