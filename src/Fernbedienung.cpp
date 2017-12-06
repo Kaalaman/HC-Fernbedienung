@@ -34,9 +34,9 @@ int iPoti = 0; // Integer für Auslesen des Universal Potis
 //bool bConfig = true; //Boolean für Config von Einstellungen
 
 struct infoStruct {
-  int BatU1;
-  int BatU2;
-  int BatU3;
+  int BatU;
+  //int BatU2;
+  //int BatU3;
 } hcInfo;
 
 
@@ -120,7 +120,7 @@ void loop()   /****** LOOP: Dauerschleife ******/
 
 
       Serial.print("INFO: Batterie: ");
-      Serial.print(map(hcInfo.BatU1, 0, 1023, 0, 255));
+      Serial.print(map(hcInfo.BatU, 0, 1023, 0, 255));
 
       AusgabeDisplay(bBetriebsModi);
 
@@ -164,9 +164,9 @@ void AusgabeDisplay (byte vBetriebsModus){
   Wire.write ( map(myData.Yposition, 0, 1023, 0, 255));
   Wire.write ( myData.switchOn);
   Wire.write ( map(myData.Spoti, 0, 1023, 0, 228));
-  Wire.write ( map(hcInfo.BatU1, 0, 1023, 0, 254));
-  Wire.write ( map(hcInfo.BatU2, 0, 1023, 0, 254));
-  Wire.write ( map(hcInfo.BatU3, 0, 1023, 0, 254));
+  Wire.write ( map(hcInfo.BatU, 0, 1023, 0, 254));
+  //Wire.write ( map(hcInfo.BatU2, 0, 1023, 0, 254));
+  //Wire.write ( map(hcInfo.BatU3, 0, 1023, 0, 254));
 
   Wire.endTransmission();
 }
