@@ -84,8 +84,8 @@ void setup()   /****** SETUP: einmal durchlaufen ******/
   Wire.begin ();
   delay(1000);
 
-  //Config ();
-  Serial.print ("EndeSetup");
+  Config ();
+  Serial.print ("Ende Setup\n");
 }//--Ende Setup---
 
 
@@ -94,13 +94,6 @@ void loop()   /****** LOOP: Dauerschleife ******/
   if (hcRadio.available( &pipeNr)) {//wenn daten per funk verfügbar sind
 
     WerteEinlesen ();//Funtion zum Eingaben Einlesen
-
-    if (myData.switchOn == true && bBetriebsModi == 1) {
-      bBetriebsModi = 2;
-    }
-    else if (myData.switchOn ==true && bBetriebsModi ==2) {
-      bBetriebsModi = 1;
-    }
 
     while (hcRadio.available( &pipeNr)) {
       hcRadio.read( &hcInfo, sizeof(hcInfo));
@@ -124,7 +117,7 @@ void loop()   /****** LOOP: Dauerschleife ******/
       Serial.print("INFO: Batterie: ");
       Serial.print(map(hcInfo.BatU, 0, 1023, 0, 255));
 
-      AusgabeDisplay(bBetriebsModi);
+      AusgabeDisplay(1); // für Loop-Betrieb
 
       myData.zaehler++;
       Serial.print("\n");
@@ -166,7 +159,7 @@ void AusgabeDisplay (byte vBetriebsModus){
   Wire.write ( map(myData.Yposition, 0, 1023, 0, 255));
   Wire.write ( myData.switchOn);
   Wire.write ( map(myData.Spoti, 0, 1023, 0, 228));
-  Wire.write ( map(hcInfo.BatU, 0, 1023, 0, 254));
+  Wire.write ( map(hcInfo.BatU, 820, 1023, 0, 255));
 
   Wire.endTransmission();
 }
@@ -177,14 +170,56 @@ void Config () {
 
   bool vbConfig = true;
 
+  int iConfigX = 0;
+  int iConfigY = 0;
+  int iSW = 0;
+  int iButtonPosition = 0;
+  bool bButton = false;
+
+  //bBetriebsModi = 2;
+
   while (vbConfig == true ) {
-    Serial.print("While");
-    WerteEinlesen();
-    AusgabeDisplay (bBetriebsModi);
+    //WerteEinlesen();
+    //AusgabeDisplay (2); // 2 für Config-Mode
 
-    //Wire.begin (MASTER_ADRESS);
-    //Wire.read(bFeldAuswahl);
+    Serial.print("A oder B ??\n");
+    Serial.print("mit Joystick hoch oder runter\n");
 
-  }
+    while (bButton == false) {
+
+      iConfigX = analogRead(JOYSTICK_X);
+      iConfigY = map(analogRead(JOYSTICK_Y), 0, 1023, 1023, 0);
+      iSW  = !digitalRead(JOYSTICK_SW);
+
+      WerteEinlesen();
+      AusgabeDisplay(2);
+
+      if(iConfigY < 500)
+      {
+        iButtonPosition = 1;
+        Serial.print("unten\n");
+        delay(100);
+      } //ende if position oben
+
+      else if(iConfigY > 520)
+      {
+        iButtonPosition = -1;
+        Serial.print("oben\n");
+        delay(100);
+      }// ende if Position unten
+
+      else
+      {
+      }
+
+      if (iSW == 1 && iButtonPosition != 0 )
+        {
+          bButton = true;
+          vbConfig = false;
+        }//ende Prüfung Button gedrückt
+
+    } //ende while Button=false
+
+  }// Ende While Config==true
   Serial.print ("Konfiguration");
 }
